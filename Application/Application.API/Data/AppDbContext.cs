@@ -5,11 +5,12 @@ namespace Application.API.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions dbContextOptions) : base(dbContextOptions){}
+        public AppDbContext(DbContextOptions<AppDbContext> dbContextOptions) : base(dbContextOptions){}
 
         public DbSet<Region> Regions { get; set; }
         public DbSet<Difficulty> Difficulties { get; set; }
         public DbSet<Walk> Walks { get; set; }
+        public DbSet<Image> Images { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
