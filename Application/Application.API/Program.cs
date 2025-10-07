@@ -1,6 +1,7 @@
 using Application.API.Data;
 using Application.API.Mappers;
 using Application.API.Repositories.AuthenticationRepository;
+using Application.API.Repositories.ImageRepository;
 using Application.API.Repositories.RegionRepository;
 using Application.API.Repositories.WalkRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -14,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -53,6 +56,7 @@ builder.Services.AddDbContext<AuthDbContext>(options => options.UseSqlServer(bui
 builder.Services.AddScoped<IRegionRepository, SQLRegionRepository>();
 builder.Services.AddScoped<IWalkRepository, SQLWalkRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<IImageRepository, LocalImageRepository>();
 
 // Use AutoMapper dependency injection extension
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
