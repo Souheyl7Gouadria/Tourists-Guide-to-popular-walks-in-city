@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Application.API.Controllers
@@ -20,11 +21,13 @@ namespace Application.API.Controllers
         private readonly AppDbContext _dbContext;
         private readonly IRegionRepository _regionRepository;
         private readonly IMapper _mapper;
-        public RegionsController(AppDbContext dbContext, IRegionRepository regionRepository, IMapper mapper)
+        private readonly ILogger<RegionsController> _logger;
+        public RegionsController(AppDbContext dbContext, IRegionRepository regionRepository, IMapper mapper, ILogger<RegionsController> logger)
         {
             _dbContext = dbContext;
             _regionRepository = regionRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
 
@@ -32,10 +35,13 @@ namespace Application.API.Controllers
         [Authorize(Roles = "Reader")]
         public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery] string? filterQuery, [FromQuery] string? sortBy, [FromQuery] bool? isAscending, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 20)
         {
+
+            _logger.LogInformation("Retreiving Regions from DB..");
             // domain models , from DB
             var regions = await _regionRepository.GetAllAsync(filterOn, filterQuery, sortBy, isAscending, pageNumber, pageSize);
             // map domain models to DTOs
             var regionsDTO = _mapper.Map<List<RegionDTO>>(regions);
+            _logger.LogInformation($"Regions retrieved from DB: {JsonSerializer.Serialize(regions)}");
             // return DTOs
             return Ok(regionsDTO);
         }

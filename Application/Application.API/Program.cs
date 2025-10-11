@@ -1,5 +1,6 @@
 using Application.API.Data;
 using Application.API.Mappers;
+using Application.API.Middlewares;
 using Application.API.Repositories.AuthenticationRepository;
 using Application.API.Repositories.ImageRepository;
 using Application.API.Repositories.RegionRepository;
@@ -7,11 +8,23 @@ using Application.API.Repositories.WalkRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Logging.ClearProviders();
+
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/Walks_Log.txt", rollingInterval: RollingInterval.Day)
+    .MinimumLevel.Information()
+    .CreateLogger();
+
+builder.Logging.AddSerilog(logger);
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -100,12 +113,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// the exception middleware should be at the top of the pipeline so it wraps everything
+app.UseMiddleware<ExceptionHandlerMiddleware>();
+
 app.UseHttpsRedirection();
 
 // Add Authentication middleware BEFORE Authorization
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "Images")),
+    RequestPath = "/Images"
+});
 
 app.MapControllers();
 
